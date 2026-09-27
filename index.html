@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Verifikasi Data Pegawai</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        linear-gradient(
+          135deg,
+          #eff6ff,
+          #f8fafc
+        );
+      color: #0f172a;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 440px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 28px 22px;
+      box-shadow:
+        0 20px 60px
+        rgba(15, 23, 42, 0.10);
+    }
+
+    .logo {
+      width: 66px;
+      height: 66px;
+      margin: auto;
+      border-radius: 20px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background: #2563eb;
+      color: white;
+
+      font-size: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      margin: 18px 0 7px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 28px;
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      font-size: 14px;
+      margin: 17px 0 8px;
+    }
+
+    input {
+      width: 100%;
+      height: 56px;
+
+      border: 2px solid #e2e8f0;
+      border-radius: 14px;
+
+      padding: 0 16px;
+
+      font-size: 17px;
+      color: #0f172a;
+
+      outline: none;
+
+      transition: .2s;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      box-shadow:
+        0 0 0 4px
+        rgba(37, 99, 235, .08);
+    }
+
+    button {
+      width: 100%;
+      height: 55px;
+
+      border: none;
+      border-radius: 14px;
+
+      margin-top: 20px;
+
+      background: #2563eb;
+      color: white;
+
+      font-size: 15px;
+      font-weight: bold;
+
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    button:hover {
+      filter: brightness(.96);
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 7px;
+    }
+
+    .security {
+      margin-top: 22px;
+
+      padding: 12px;
+
+      background: #f8fafc;
+
+      border-radius: 12px;
+
+      text-align: center;
+
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .loading {
+      display: none;
+
+      text-align: center;
+
+      margin-top: 18px;
+
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .spinner {
+      width: 25px;
+      height: 25px;
+
+      margin: 0 auto 8px;
+
+      border: 3px solid #e2e8f0;
+      border-top-color: #2563eb;
+
+      border-radius: 50%;
+
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+
+      to {
+        transform: rotate(360deg);
+      }
+
+    }
+
+    .error {
+      display: none;
+
+      margin-top: 16px;
+      padding: 13px;
+
+      border-radius: 12px;
+
+      background: #fef2f2;
+      color: #b91c1c;
+
+      text-align: center;
+
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* HASIL */
+
+    #hasil {
+      display: none;
+    }
+
+    .success-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .success-icon {
+      width: 62px;
+      height: 62px;
+
+      margin: auto;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: #dcfce7;
+      color: #16a34a;
+
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    .success-header h2 {
+      margin: 15px 0 5px;
+      font-size: 22px;
+    }
+
+    .success-header p {
+      margin: 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .data-item {
+      background: #f8fafc;
+
+      border: 1px solid #e2e8f0;
+
+      border-radius: 13px;
+
+      padding: 14px 15px;
+
+      margin-bottom: 10px;
+    }
+
+    .data-label {
+      color: #64748b;
+
+      font-size: 11px;
+      font-weight: bold;
+
+      text-transform: uppercase;
+
+      margin-bottom: 5px;
+    }
+
+    .data-value {
+      font-size: 17px;
+      font-weight: bold;
+
+      overflow-wrap: anywhere;
+    }
+
+    .question {
+      margin-top: 24px;
+      margin-bottom: 5px;
+
+      text-align: center;
+
+      font-weight: bold;
+    }
+
+    .question-small {
+      text-align: center;
+
+      color: #64748b;
+
+      font-size: 12px;
+
+      margin-bottom: 12px;
+    }
+
+    .btn-benar {
+      background: #16a34a;
+      margin-top: 10px;
+    }
+
+    .btn-salah {
+      background: #ffffff;
+
+      color: #dc2626;
+
+      border: 2px solid #fecaca;
+
+      margin-top: 10px;
+    }
+
+    .btn-back {
+      background: transparent;
+      color: #64748b;
+
+      margin-top: 7px;
+    }
+
+    /* SELESAI */
+
+    #selesai {
+      display: none;
+      text-align: center;
+    }
+
+    .done-icon {
+      font-size: 60px;
+    }
+
+    #selesai h2 {
+      margin-bottom: 8px;
+    }
+
+    #selesai p {
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 480px) {
+
+      .page {
+        align-items: flex-start;
+
+        padding:
+          25px 12px
+          40px;
+      }
+
+      .card {
+        border-radius: 20px;
+
+        padding:
+          25px 18px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+<div class="page">
+
+  <div class="card">
+
+
+    <!-- ========================= -->
+    <!-- FORM VERIFIKASI -->
+    <!-- ========================= -->
+
+    <section id="formVerifikasi">
+
+      <div class="logo">
+        👤
+      </div>
+
+      <h1>
+        Verifikasi Data Pegawai
+      </h1>
+
+      <div class="subtitle">
+        Masukkan Nomor SIOD dan
+        5 digit terakhir NIK Anda.
+      </div>
+
+
+      <label for="siod">
+        Nomor SIOD
+      </label>
+
+      <input
+        id="siod"
+        type="text"
+        autocomplete="off"
+        placeholder="Masukkan Nomor SIOD"
+      >
+
+
+      <label for="nik5">
+        5 Digit Terakhir NIK
+      </label>
+
+      <input
+        id="nik5"
+        type="password"
+        inputmode="numeric"
+        maxlength="5"
+        autocomplete="off"
+        placeholder="•••••"
+      >
+
+      <div class="hint">
+        Masukkan tepat 5 digit terakhir NIK.
+      </div>
+
+
+      <button
+        id="btnVerifikasi"
+        onclick="verifikasi()"
+      >
+        VERIFIKASI DATA
+      </button>
+
+
+      <div
+        id="loading"
+        class="loading"
+      >
+
+        <div class="spinner"></div>
+
+        Memverifikasi data...
+
+      </div>
+
+
+      <div
+        id="error"
+        class="error"
+      ></div>
+
+
+      <div class="security">
+        🔒 Informasi digunakan untuk
+        proses verifikasi data pegawai.
+      </div>
+
+    </section>
+
+
+
+    <!-- ========================= -->
+    <!-- HASIL -->
+    <!-- ========================= -->
+
+    <section id="hasil">
+
+      <div class="success-header">
+
+        <div class="success-icon">
+          ✓
+        </div>
+
+        <h2>
+          Data Ditemukan
+        </h2>
+
+        <p>
+          Silakan periksa kembali
+          data berikut.
+        </p>
+
+      </div>
+
+
+      <div class="data-item">
+
+        <div class="data-label">
+          Nama
+        </div>
+
+        <div
+          class="data-value"
+          id="hasilNama"
+        ></div>
+
+      </div>
+
+
+      <div class="data-item">
+
+        <div class="data-label">
+          Nomor SIOD
+        </div>
+
+        <div
+          class="data-value"
+          id="hasilSiod"
+        ></div>
+
+      </div>
+
+
+      <div class="data-item">
+
+        <div class="data-label">
+          NIK
+        </div>
+
+        <div
+          class="data-value"
+          id="hasilNik"
+        ></div>
+
+      </div>
+
+
+      <div class="data-item">
+
+        <div class="data-label">
+          Nomor Rekening
+        </div>
+
+        <div
+          class="data-value"
+          id="hasilRekening"
+        ></div>
+
+      </div>
+
+
+      <div class="data-item">
+
+        <div class="data-label">
+          Bank
+        </div>
+
+        <div
+          class="data-value"
+          id="hasilBank"
+        ></div>
+
+      </div>
+
+
+      <div class="question">
+        Apakah data di atas sudah benar?
+      </div>
+
+      <div class="question-small">
+        Pastikan terutama NIK dan
+        nomor rekening Anda.
+      </div>
+
+
+      <button
+        id="btnBenar"
+        class="btn-benar"
+        onclick="konfirmasi('BENAR')"
+      >
+        ✓ DATA SUDAH BENAR
+      </button>
+
+
+      <button
+        id="btnSalah"
+        class="btn-salah"
+        onclick="konfirmasi('TIDAK SESUAI')"
+      >
+        ! DATA TIDAK SESUAI
+      </button>
+
+
+      <button
+        class="btn-back"
+        onclick="kembali()"
+      >
+        ← Kembali
+      </button>
+
+    </section>
+
+
+
+    <!-- ========================= -->
+    <!-- SELESAI -->
+    <!-- ========================= -->
+
+    <section id="selesai">
+
+      <div class="done-icon">
+        ✅
+      </div>
+
+      <h2 id="judulSelesai">
+        Terima Kasih
+      </h2>
+
+      <p id="pesanSelesai">
+        Konfirmasi data berhasil disimpan.
+      </p>
+
+
+      <button onclick="resetAplikasi()">
+        SELESAI
+      </button>
+
+    </section>
+
+
+  </div>
+
+</div>
+
+
+
+<script>
+
+/* ===================================== */
+/* KONFIGURASI SUPABASE                  */
+/* ===================================== */
+
+/*
+  GANTI HANYA DUA BAGIAN INI.
+
+  Gunakan:
+  - Project URL
+  - Publishable / anon key
+
+  JANGAN gunakan service_role / secret key.
+*/
+
+const SUPABASE_URL =
+  "https://nwrbjbwjmkahjuuyizfq.supabase.co";
+
+const SUPABASE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53cmJqYndqbWthaGp1dXlpemZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MjM4OTIsImV4cCI6MjA5MjQ5OTg5Mn0.n67pONlkoMqZguyoTwQQFJ0VBRfPaIVuVlPGxsajaGA";
+
+
+/* ===================================== */
+/* CLIENT SUPABASE                       */
+/* ===================================== */
+
+const db =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+let pegawaiId = null;
+
+
+/* ===================================== */
+/* VERIFIKASI                            */
+/* ===================================== */
+
+async function verifikasi() {
+
+  const siod =
+    document
+      .getElementById("siod")
+      .value
+      .trim();
+
+  const nik5 =
+    document
+      .getElementById("nik5")
+      .value
+      .trim();
+
+  const btn =
+    document
+      .getElementById("btnVerifikasi");
+
+  const loading =
+    document
+      .getElementById("loading");
+
+
+  sembunyikanError();
+
+
+  /* Validasi SIOD */
+
+  if (!siod) {
+
+    tampilkanError(
+      "Silakan masukkan Nomor SIOD."
+    );
+
+    return;
+  }
+
+
+  /* Validasi NIK */
+
+  if (!/^\d{5}$/.test(nik5)) {
+
+    tampilkanError(
+      "Masukkan tepat 5 digit terakhir NIK."
+    );
+
+    return;
+  }
+
+
+  btn.disabled = true;
+
+  loading.style.display =
+    "block";
+
+
+  try {
+
+    const { data, error } =
+      await db.rpc(
+        "verifikasi_pegawai",
+        {
+          p_siod: siod,
+          p_nik5: nik5
+        }
+      );
+
+
+    if (error) {
+
+      console.error(error);
+
+      tampilkanError(
+        "Terjadi kesalahan saat memverifikasi data."
+      );
+
+      return;
+    }
+
+
+    /*
+      RPC mengembalikan array.
+      Jika tidak cocok = array kosong.
+    */
+
+    if (!data || data.length === 0) {
+
+      tampilkanError(
+        "Data verifikasi tidak sesuai. Silakan periksa kembali Nomor SIOD dan 5 digit terakhir NIK."
+      );
+
+      return;
+    }
+
+
+    const pegawai =
+      data[0];
+
+
+    /* Simpan ID untuk konfirmasi */
+
+    pegawaiId =
+      pegawai.pegawai_id;
+
+
+    /* Tampilkan hasil */
+
+    document
+      .getElementById("hasilNama")
+      .textContent =
+        pegawai.nama || "-";
+
+
+    document
+      .getElementById("hasilSiod")
+      .textContent =
+        pegawai.no_siod || "-";
+
+
+    document
+      .getElementById("hasilNik")
+      .textContent =
+        pegawai.nik_masked || "-";
+
+
+    document
+      .getElementById("hasilRekening")
+      .textContent =
+        pegawai.no_rekening || "-";
+
+
+    document
+      .getElementById("hasilBank")
+      .textContent =
+        pegawai.bank || "-";
+
+
+    document
+      .getElementById("formVerifikasi")
+      .style.display =
+        "none";
+
+
+    document
+      .getElementById("hasil")
+      .style.display =
+        "block";
+
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+
+  } catch (err) {
+
+    console.error(err);
+
+    tampilkanError(
+      "Tidak dapat terhubung ke server. Silakan coba kembali."
+    );
+
+  } finally {
+
+    btn.disabled = false;
+
+    loading.style.display =
+      "none";
+
+  }
+
+}
+
+
+
+/* ===================================== */
+/* KONFIRMASI                            */
+/* ===================================== */
+
+async function konfirmasi(status) {
+
+  if (!pegawaiId) {
+
+    alert(
+      "Data pegawai tidak ditemukan."
+    );
+
+    return;
+  }
+
+
+  const btnBenar =
+    document.getElementById(
+      "btnBenar"
+    );
+
+  const btnSalah =
+    document.getElementById(
+      "btnSalah"
+    );
+
+
+  btnBenar.disabled = true;
+  btnSalah.disabled = true;
+
+
+  try {
+
+    const { data, error } =
+      await db.rpc(
+        "konfirmasi_pegawai",
+        {
+          p_id: pegawaiId,
+          p_status: status
+        }
+      );
+
+
+    if (error) {
+
+      console.error(error);
+
+      alert(
+        "Konfirmasi gagal disimpan. Silakan coba kembali."
+      );
+
+      return;
+    }
+
+
+    if (data !== true) {
+
+      alert(
+        "Konfirmasi tidak dapat disimpan."
+      );
+
+      return;
+    }
+
+
+    document
+      .getElementById("hasil")
+      .style.display =
+        "none";
+
+
+    document
+      .getElementById("selesai")
+      .style.display =
+        "block";
+
+
+    if (status === "BENAR") {
+
+      document
+        .getElementById(
+          "judulSelesai"
+        )
+        .textContent =
+          "Data Berhasil Dikonfirmasi";
+
+
+      document
+        .getElementById(
+          "pesanSelesai"
+        )
+        .textContent =
+          "Terima kasih. Data Anda telah dikonfirmasi BENAR.";
+
+    } else {
+
+      document
+        .getElementById(
+          "judulSelesai"
+        )
+        .textContent =
+          "Data Ditandai Tidak Sesuai";
+
+
+      document
+        .getElementById(
+          "pesanSelesai"
+        )
+        .textContent =
+          "Terima kasih. Data Anda telah ditandai TIDAK SESUAI untuk diperiksa kembali.";
+
+    }
+
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Tidak dapat terhubung ke server."
+    );
+
+  } finally {
+
+    btnBenar.disabled = false;
+    btnSalah.disabled = false;
+
+  }
+
+}
+
+
+
+/* ===================================== */
+/* KEMBALI                               */
+/* ===================================== */
+
+function kembali() {
+
+  pegawaiId = null;
+
+
+  document
+    .getElementById("hasil")
+    .style.display =
+      "none";
+
+
+  document
+    .getElementById("formVerifikasi")
+    .style.display =
+      "block";
+
+
+  /*
+    Hapus 5 digit NIK ketika kembali.
+    SIOD dibiarkan agar mudah koreksi.
+  */
+
+  document
+    .getElementById("nik5")
+    .value =
+      "";
+
+
+  document
+    .getElementById("nik5")
+    .focus();
+
+}
+
+
+
+/* ===================================== */
+/* RESET                                 */
+/* ===================================== */
+
+function resetAplikasi() {
+
+  pegawaiId = null;
+
+
+  document
+    .getElementById("siod")
+    .value =
+      "";
+
+
+  document
+    .getElementById("nik5")
+    .value =
+      "";
+
+
+  document
+    .getElementById("selesai")
+    .style.display =
+      "none";
+
+
+  document
+    .getElementById("formVerifikasi")
+    .style.display =
+      "block";
+
+
+  sembunyikanError();
+
+
+  document
+    .getElementById("siod")
+    .focus();
+
+}
+
+
+
+/* ===================================== */
+/* ERROR                                 */
+/* ===================================== */
+
+function tampilkanError(message) {
+
+  const element =
+    document.getElementById(
+      "error"
+    );
+
+
+  element.textContent =
+    message;
+
+
+  element.style.display =
+    "block";
+
+}
+
+
+function sembunyikanError() {
+
+  document
+    .getElementById("error")
+    .style.display =
+      "none";
+
+}
+
+
+
+/* ===================================== */
+/* HANYA ANGKA UNTUK NIK                 */
+/* ===================================== */
+
+document
+  .getElementById("nik5")
+  .addEventListener(
+    "input",
+    function() {
+
+      this.value =
+        this.value
+          .replace(/\D/g, "")
+          .slice(0, 5);
+
+    }
+  );
+
+
+
+/* ===================================== */
+/* ENTER                                 */
+/* ===================================== */
+
+document
+  .getElementById("siod")
+  .addEventListener(
+    "keydown",
+    function(event) {
+
+      if (event.key === "Enter") {
+
+        document
+          .getElementById("nik5")
+          .focus();
+
+      }
+
+    }
+  );
+
+
+document
+  .getElementById("nik5")
+  .addEventListener(
+    "keydown",
+    function(event) {
+
+      if (event.key === "Enter") {
+
+        verifikasi();
+
+      }
+
+    }
+  );
+
+</script>
+
+
+</body>
+</html>
